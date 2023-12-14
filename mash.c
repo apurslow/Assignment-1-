@@ -22,11 +22,11 @@ char ** args = malloc( ARGCNT * sizeof(char*));
 *(args + 3) = file;
 *(args + 4) = NULL;
 printf("cmd1->");
-fscanf(stdin, "%s", cmd1);
+fgets(cmd1, sizeof(cmd1), stdin);
 printf("cmd2->");
-fscanf(stdin, "%s", cmd2);
+fgets(cmd2, sizeof(cmd2), stdin);
 printf("cmd3->");
-fscanf(stdin, "%s", cmd3);
+fgets(cmd3, sizeof(cmd3), stdin);
 printf("file->");
 fscanf(stdin, "%s", file);
 
