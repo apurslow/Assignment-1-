@@ -17,7 +17,7 @@ int whiteSpaceCounter(char * line){
             count++;
         }
     }
-
+    //number of words = number of spaces + 1
     return count+1;
 }
 
@@ -28,12 +28,12 @@ char ** parse(char * line, char * file){
     //remember dummy, space at the end n + 2 not 1
 
     char ** args = malloc( (whiteSpaceCounter(line)+1)* sizeof(char*));
-   
-    char * token = strtok(line, " ");
+    //source of much of my frustration, fgets was capturing newline and failing execvp because of it
+    char * token = strtok(line, " \n");
     int i = 0;
     while (token != NULL){
         args[i] = token;
-        token = strtok(NULL, " ");
+        token = strtok(NULL, " \n");
         i++;
     }
 
@@ -67,6 +67,11 @@ fscanf(stdin, "%s", file);
 char ** command1 = parse(cmd1 , file);
 char ** command2 = parse(cmd2 , file);
 char ** command3 = parse(cmd3,  file);
+
+//print parsed user input of command 1
+for (int i = 0; command1[i] != NULL; i++) {
+    printf("command1[%d] = %s\n", i, command1[i]);
+}
 
 
 
