@@ -23,7 +23,7 @@ int whiteSpaceCounter(char * line){
 
 
 //parses a string into an array of strings
-char ** parse(char * line){
+char ** parse(char * line, char * file){
    
     //remember dummy, space at the end n + 2 not 1
 
@@ -36,7 +36,10 @@ char ** parse(char * line){
         token = strtok(NULL, " ");
         i++;
     }
-    args[i] = NULL;
+
+    args[i] = file;
+    printf("file name at args[%i]=%s\n",i, args[i]);
+    args[i+1] = NULL;
     return args;
 }
 
@@ -50,23 +53,21 @@ int main(int argc, char *argv[])
 
     // Additional code goes here
 
-    char ** args = malloc( ARGCNT * sizeof(char*));
-    *(args + 0) = cmd1;
-    *(args + 1) = cmd2;
-    *(args + 2) = cmd3;
-    *(args + 3) = file;
-    *(args + 4) = NULL;
+//build variables to store user input
 printf("cmd1->");
 fgets(cmd1, sizeof(cmd1), stdin);
-char ** command1 = parse(cmd1);
 printf("cmd2->");
 fgets(cmd2, sizeof(cmd2), stdin);
-char ** command2 = parse(cmd2);
 printf("cmd3->");
 fgets(cmd3, sizeof(cmd3), stdin);
-char ** command3 = parse(cmd3);
 printf("file->");
 fscanf(stdin, "%s", file);
+
+//build char arrays to store parsed user input
+char ** command1 = parse(cmd1 , file);
+char ** command2 = parse(cmd2 , file);
+char ** command3 = parse(cmd3,  file);
+
 
 
 //fork original parent process by nesting 3 levels. Use wait() to wait for porcesses to exit/
@@ -124,7 +125,6 @@ else{
     exit(1);
 
 }
-
 
 return 0;
 }
