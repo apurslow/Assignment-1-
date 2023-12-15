@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/wait.h>
+
+
 
 #define MAXSTR 255
 #define ARGCNT 5
 
-//counts the number of white spaces in a string
+//counts the number of white spaces in a string and adds 1 to represent words counted
 int whiteSpaceCounter(char * line){
     int count = 0;
     for (int i = 0; i < strlen(line); i++){
@@ -14,14 +17,18 @@ int whiteSpaceCounter(char * line){
             count++;
         }
     }
-    return count;
+
+    return count+1;
 }
+
+
 //parses a string into an array of strings
 char ** parse(char * line){
-    //print whiteSpaceCounter(line);
-    int counter = whiteSpaceCounter(line);
-    printf("counter=%d\n",counter);
-    char ** args = malloc( (whiteSpaceCounter(line)+1) * sizeof(char*));
+   
+    //remember dummy, space at the end n + 2 not 1
+
+    char ** args = malloc( (whiteSpaceCounter(line)+1)* sizeof(char*));
+   
     char * token = strtok(line, " ");
     int i = 0;
     while (token != NULL){
@@ -49,8 +56,8 @@ int main(int argc, char *argv[])
     *(args + 2) = cmd3;
     *(args + 3) = file;
     *(args + 4) = NULL;
-    printf("cmd1->");
-    fgets(cmd1, sizeof(cmd1), stdin);
+printf("cmd1->");
+fgets(cmd1, sizeof(cmd1), stdin);
 char ** command1 = parse(cmd1);
 printf("cmd2->");
 fgets(cmd2, sizeof(cmd2), stdin);
@@ -61,13 +68,62 @@ char ** command3 = parse(cmd3);
 printf("file->");
 fscanf(stdin, "%s", file);
 
-printf("char %lu=%d\n",strlen(cmd1),cmd1[strlen(cmd1)]);
-for (int i=0;i<ARGCNT;i++) printf("i=%d command1[i]=%s\n",i,*(command1 + i));
 
+//fork original parent process by nesting 3 levels. Use wait() to wait for porcesses to exit/
 
-int status = execvp(command1[0], command1);
-printf("STATUS CODE=%d\n",status);
+int process1 = fork();
+if (process1 < 0){
+    printf("fork failed\n");
+    exit(1);
+}
+else if (process1 == 0){
+    //child process 1
+    int process2 = fork();
+    if (process2 < 0){
+        printf("fork failed\n");
+        exit(1);
+    }
+    else if (process2 == 0){
+        //child process 2
+        int process3 = fork();
+        if (process3 < 0){
+            printf("fork failed\n");
+            exit(1);
+        }
+        else if (process3 == 0){
+            //child process 3
+            printf("child process 3\n");
+            int status = execvp(command3[0], command3);
+            printf("CMD3:[SHELL 3] STATUS CODE=%d\n", status);
+            exit(1);
+        }
+        else{
+            //parent process 2
+            printf("parent process 2\n");
+            wait(NULL);
+            int status = execvp(command2[0], command2);
+            printf("CMD2:[SHELL 2] STATUS CODE=%d\n", status);
+            exit(1);
+        }
+    }
+    else{
+        //parent process 1
+        printf("parent process 1\n");
+        wait(NULL);
+        int status = execvp(command1[0], command1);
+        printf("CMD1:[SHELL 1] STATUS CODE=%d\n", status);
+        exit(1);
+    }
+}
+else{
+    //parent process
+  
+    wait(NULL);
+    printf("parent process\n");
+    printf("file=%s\n",file);
+    exit(1);
 
+}
 
 
 return 0;
