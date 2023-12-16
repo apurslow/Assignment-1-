@@ -1,3 +1,5 @@
+// EXTRA CREDIT FEATURES: EC1 implemented
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -39,7 +41,7 @@ char ** parse(char * line, char * file){
     }
 
     args[i] = file;
-    printf("file name at args[%i]=%s\n",i, args[i]);
+    //printf("file name at args[%i]=%s\n",i, args[i]);
     args[i+1] = NULL;
     return args;
 }
@@ -69,10 +71,10 @@ char ** command1 = parse(cmd1 , file);
 char ** command2 = parse(cmd2 , file);
 char ** command3 = parse(cmd3,  file);
 
-//print parsed user input of command 1
-for (int i = 0; command1[i] != NULL; i++) {
-    printf("command1[%d] = %s\n", i, command1[i]);
-}
+// //print parsed user input of command 1
+// for (int i = 0; command1[i] != NULL; i++) {
+//     printf("command1[%d] = %s\n", i, command1[i]);
+// }
 
 
 
@@ -83,17 +85,19 @@ clock_t start1, end1, start2, end2, start3, end3;
 
 //fork original parent process by nesting 3 levels. Use wait() to wait for porcesses to exit/
 //initialize start1
-
-
+start1 = clock();
 int process1 = fork();
+//if less than 0, fork failed
 if (process1 < 0){
     printf("fork failed\n");
     exit(1);
 }
+//if 0, child process 1
 else if (process1 == 0){
     //child process 1
-    start1 = clock();
-    
+    start2 = clock();
+    //print out clock time of start1
+   
     int process2 = fork();
     if (process2 < 0){
         printf("fork failed\n");
@@ -101,8 +105,7 @@ else if (process1 == 0){
     }
     else if (process2 == 0){
         //child process 2
-        start2 = clock();
-        
+        start3 = clock();
         int process3 = fork();
         if (process3 < 0){
             printf("fork failed\n");
@@ -110,7 +113,7 @@ else if (process1 == 0){
         }
         else if (process3 == 0){
             //child process 3
-            start3 = clock();
+            
             //printf("child process 3\n");
             int status = execvp(command3[0], command3);
             printf("CMD3:[SHELL 3] STATUS CODE=%d\n", status);
@@ -121,35 +124,51 @@ else if (process1 == 0){
             //printf("parent process 2\n");
             wait(NULL);
             end3 = clock();
+            printf("process 3 id = %d\n", process3);
             int status = execvp(command2[0], command2);
             printf("CMD2:[SHELL 2] STATUS CODE=%d\n", status);
             exit(1);
         }
+
+        
     }
     else{
-        //parent process 1
+        //parent process 2
         //printf("parent process 1\n");
         wait(NULL);
         end2 = clock();
+        printf("process 2 id = %d\n", process2);
         int status = execvp(command1[0], command1);
         printf("CMD1:[SHELL 1] STATUS CODE=%d\n", status);
         exit(1);
     }
+    
+    
+    
 }
+//if greater than 0, parent process 1
 else{
-    //parent process
-  
+    //parent process 1
     wait(NULL);
     end1 = clock();
-    double total1 = ((double) (end1 - start1)) / CLOCKS_PER_SEC;
-    double total2 = ((double) (end2 - start2)) / CLOCKS_PER_SEC;
-    double total3 = ((double) (end3 - start3)) / CLOCKS_PER_SEC;
-    printf("CMD1:[SHELL 1] TOTAL TIME=%f\n", total1);
-    printf("CMD2:[SHELL 2] TOTAL TIME=%f\n", total2);
-    printf("CMD3:[SHELL 3] TOTAL TIME=%f\n", total3);
-    exit(1);
+    printf("process 1 id = %d\n", process1);
+    //exit(1);
 
 }
+    
+    
+    double total1 = ((double) (end1 - start1)) / (CLOCKS_PER_SEC/1000);
+    double total2 = ((double) (end2 - start1)) / (CLOCKS_PER_SEC/1000);
+    double total3 = ((double) (end3 - start1)) / (CLOCKS_PER_SEC/1000);
+    double totalExecutionTime = total1 + total2 + total3;
+
+    printf("CMD1:[SHELL 1] TOTAL TIME= %f ms\n", total1);
+   
+    printf("CMD2:[SHELL 2] TOTAL TIME= %f ms\n", total2);
+   
+    printf("CMD3:[SHELL 3] TOTAL TIME= %f ms\n", total3);
+   
+    printf("TOTAL EXECUTION TIME= %f ms\n", totalExecutionTime);
 
 return 0;
 }
